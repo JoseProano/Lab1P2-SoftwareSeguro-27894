@@ -25,6 +25,13 @@ USAGE_GUIDE.md
 !data/Damn_Vulnerable_C_Program/
 !data/how2heap/
 
+# Excluir binarios de compilación de repos de prueba
+data/Damn_Vulnerable_C_Program/**/target/
+data/how2heap/**/target/
+**/*.rlib
+**/*.a
+**/*.o
+
 # Models - Solo permitir metadata JSON
 models/*.joblib
 models/*.h5
