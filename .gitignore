@@ -81,7 +81,7 @@ ENV/
 *~
 
 # GitHub Actions (temporal - no implementado aún)
-.github/workflows/
+.github/
 
 # OS
 .DS_Store
