@@ -1,0 +1,204 @@
+{
+  "model_type": "neural_network",
+  "trained_date": "2025-12-03T22:59:37.326120",
+  "dataset_size": 332,
+  "train_size": 265,
+  "test_size": 67,
+  "num_features": 34,
+  "classes": [
+    "CWE-22",
+    "CWE-79",
+    "CWE-798",
+    "CWE-89",
+    "SAFE"
+  ],
+  "data_source": "Massive GitHub repository mining",
+  "repositories": [
+    "WebGoat/WebGoat",
+    "CSPF-Founder/JavaVulnerableLab",
+    "dschadow/JavaSecurity",
+    "anxolerd/dvpwa",
+    "OWASP/NodeGoat",
+    "cr0hn/vulnerable-node",
+    "ethicalhack3r/DVWA",
+    "and more..."
+  ],
+  "results": {
+    "random_forest": {
+      "accuracy": 0.8955223880597015,
+      "f1_score": 0.8890784174366263,
+      "cv_f1_mean": 0.8963830669578424,
+      "cv_f1_std": 0.04007361123103701,
+      "roc_auc": 0.9348838434943925,
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          6,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          51
+        ]
+      ]
+    },
+    "gradient_boosting": {
+      "accuracy": 0.9104477611940298,
+      "f1_score": 0.8931336361844372,
+      "cv_f1_mean": 0.9149269445081686,
+      "cv_f1_std": 0.032997826451527615,
+      "roc_auc": 0.9290467682772577,
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          2
+        ],
+        [
+          0,
+          1,
+          0,
+          5,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          52
+        ]
+      ]
+    },
+    "svm": {
+      "accuracy": 0.9253731343283582,
+      "f1_score": 0.9249466950959488,
+      "cv_f1_mean": 0.8848374132456442,
+      "cv_f1_std": 0.047663061249457,
+      "roc_auc": 0.9584326777131293,
+      "confusion_matrix": [
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          6,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          2,
+          50
+        ]
+      ]
+    },
+    "neural_network": {
+      "accuracy": 0.9402985074626866,
+      "f1_score": 0.9309048881095192,
+      "cv_f1_mean": 0.906889321455919,
+      "cv_f1_std": 0.029868656552157345,
+      "roc_auc": 0.9781307972847626,
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          6,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          52
+        ]
+      ]
+    }
+  }
+}

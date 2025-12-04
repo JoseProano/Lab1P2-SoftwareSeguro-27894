@@ -1,0 +1,83 @@
+{
+  "model_type": "neural_network",
+  "trained_date": "2025-12-03T23:36:06.164688",
+  "dataset_size": 20000,
+  "train_size": 16000,
+  "test_size": 4000,
+  "num_features": 34,
+  "classes": [
+    "SAFE",
+    "VULNERABLE"
+  ],
+  "data_source": "DiverseVul + BigVul (Academic datasets)",
+  "results": {
+    "random_forest": {
+      "accuracy": 0.701,
+      "f1_score": 0.6997313650171976,
+      "cv_f1_mean": 0.6803033363675584,
+      "cv_f1_std": 0.005346480047834428,
+      "roc_auc": 0.775129,
+      "confusion_matrix": [
+        [
+          1532,
+          468
+        ],
+        [
+          728,
+          1272
+        ]
+      ]
+    },
+    "gradient_boosting": {
+      "accuracy": 0.66025,
+      "f1_score": 0.6602345194352918,
+      "cv_f1_mean": 0.6414714655519276,
+      "cv_f1_std": 0.006180446797345213,
+      "roc_auc": 0.7282306250000001,
+      "confusion_matrix": [
+        [
+          1307,
+          693
+        ],
+        [
+          666,
+          1334
+        ]
+      ]
+    },
+    "svm": {
+      "accuracy": 0.69125,
+      "f1_score": 0.6856261464861244,
+      "cv_f1_mean": 0.6637465908902727,
+      "cv_f1_std": 0.00629208235203125,
+      "roc_auc": 0.768646375,
+      "confusion_matrix": [
+        [
+          1650,
+          350
+        ],
+        [
+          885,
+          1115
+        ]
+      ]
+    },
+    "neural_network": {
+      "accuracy": 0.7035,
+      "f1_score": 0.7033564245094626,
+      "cv_f1_mean": 0.6754500933717766,
+      "cv_f1_std": 0.006892235699817562,
+      "roc_auc": 0.774828125,
+      "confusion_matrix": [
+        [
+          1451,
+          549
+        ],
+        [
+          637,
+          1363
+        ]
+      ]
+    }
+  }
+}

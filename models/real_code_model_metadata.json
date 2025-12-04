@@ -1,0 +1,13 @@
+{
+  "model_type": "gradient_boosting",
+  "trained_date": "2025-12-03T22:41:17.567500",
+  "training_methodology": "SEMMA",
+  "data_source": "Real vulnerable code from JavaSpringVulny repository",
+  "feature_count": 34,
+  "algorithms_tested": [
+    "random_forest",
+    "gradient_boosting",
+    "svm",
+    "neural_network"
+  ]
+}

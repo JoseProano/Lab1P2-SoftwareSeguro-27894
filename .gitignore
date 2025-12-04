@@ -1,0 +1,118 @@
+# Logs
+logs/
+*.log
+
+# Data - Bloquear datasets grandes pero permitir repos de prueba
+data/*.npy
+data/*.npz
+data/*.csv
+data/*.pkl
+data/*.json
+data/academic_datasets/
+data/mined_repositories/
+data/real_vulnerable_code/
+data/test_repos/
+data/mms/
+
+# CVE Database (miles de archivos JSON, no necesarios)
+2025/
+
+# Documentación obsoleta
+ARCHITECTURE.md
+USAGE_GUIDE.md
+
+# Permitir solo estos repositorios de prueba C/C++ (validación del scanner)
+!data/Damn_Vulnerable_C_Program/
+!data/how2heap/
+
+# Models - Solo permitir metadata JSON
+models/*.joblib
+models/*.h5
+models/*.pkl
+!models/*_metadata.json
+!models/cve_knowledge_base.json
+
+# Reports
+reports/*.html
+reports/*.json
+reports/*.png
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Environment Variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# GitHub Actions (temporal - no implementado aún)
+.github/workflows/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+
+# MongoDB
+data/db/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+
+# Sensitive data
+secrets/
+credentials/
+*.key
+*.pem

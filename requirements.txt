@@ -1,0 +1,49 @@
+# Core Data Science Libraries
+numpy
+pandas
+scipy
+
+# Machine Learning
+scikit-learn
+xgboost
+
+# Model Interpretability
+shap
+
+# Data Visualization
+matplotlib
+seaborn
+plotly
+
+# Database
+pymongo
+
+# API & Web
+requests
+beautifulsoup4
+
+# GitHub Integration
+PyGithub
+
+# Data Processing
+python-dotenv
+pyyaml
+tqdm
+
+# Code Analysis
+radon
+
+# Security Analysis
+bandit
+
+# Feature Engineering
+imbalanced-learn
+
+# Utilities
+joblib
+
+# Logging & Monitoring
+loguru
+
+# API Rate Limiting
+ratelimit
