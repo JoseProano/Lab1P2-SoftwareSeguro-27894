@@ -32,9 +32,19 @@ tqdm
 
 # Code Analysis
 radon
+javalang
+pycparser
+tree-sitter
 
 # Security Analysis
 bandit
+
+# Testing
+pytest
+
+# Web Framework
+flask
+flask-cors
 
 # Feature Engineering
 imbalanced-learn
