@@ -1,0 +1,89 @@
+name: Security Check
+
+on:
+  pull_request:
+    branches: [ test, main ]
+
+jobs:
+  security-scan:
+    name: ML Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn numpy joblib
+      
+      - name: Notify Telegram - Analysis Started
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🔍 Security Analysis Started - PR #${{ github.event.pull_request.number }}" \
+            -d "parse_mode=Markdown"
+      
+      - name: Analyze Code for Vulnerabilities
+        id: analyze
+        run: |
+          echo "Analyzing changed files..."
+          
+          # Get changed C/C++ files
+          git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(c|cpp|h|hpp)$' || true
+          
+          # Simple vulnerability check
+          VULNERABLE=0
+          for file in $(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(c|cpp|h|hpp)$' || true); do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              
+              # Check for dangerous functions
+              if grep -q "strcpy\|gets\|system\|sprintf" "$file"; then
+                echo "⚠️ Found dangerous functions in $file"
+                VULNERABLE=1
+              fi
+            fi
+          done
+          
+          echo "vulnerable=$VULNERABLE" >> $GITHUB_OUTPUT
+      
+      - name: Notify Telegram - Vulnerable Code Detected
+        if: steps.analyze.outputs.vulnerable == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🚨 *VULNERABILITY DETECTED*%0A%0APR: #${{ github.event.pull_request.number }}%0AAuthor: ${{ github.event.pull_request.user.login }}%0A%0AFound dangerous functions: strcpy, gets, system%0A%0A❌ PR REJECTED" \
+            -d "parse_mode=Markdown"
+      
+      - name: Notify Telegram - Code is Safe
+        if: steps.analyze.outputs.vulnerable == '0'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=✅ *CODE IS SAFE*%0A%0APR: #${{ github.event.pull_request.number }}%0ANo vulnerabilities detected" \
+            -d "parse_mode=Markdown"
+      
+      - name: Fail if vulnerable
+        if: steps.analyze.outputs.vulnerable == '1'
+        run: |
+          echo "❌ Vulnerable code detected. Blocking PR."
+          exit 1
