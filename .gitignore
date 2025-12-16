@@ -87,9 +87,6 @@ ENV/
 *.swo
 *~
 
-# GitHub Actions (temporal - no implementado aún)
-.github/
-
 # OS
 .DS_Store
 Thumbs.db
