@@ -1,0 +1,54 @@
+{
+  "model_type": "xgboost",
+  "trained_date": "2025-12-16T10:26:00.033304",
+  "dataset_size": 38294,
+  "train_size": 30635,
+  "test_size": 7659,
+  "num_features": 5053,
+  "classes": [
+    "SAFE",
+    "VULNERABLE"
+  ],
+  "data_source": "Real vulnerability dataset (pre-processed)",
+  "metrics": {
+    "test_accuracy": 0.9998694346520434,
+    "test_f1_score": 0.9998694266057595,
+    "test_precision": 0.9998694590476613,
+    "test_recall": 0.9998694346520434,
+    "roc_auc": 1.0,
+    "cv_accuracy_mean": 0.9999673575975191,
+    "cv_accuracy_std": 6.528480496164058e-05,
+    "cv_scores": [
+      1.0,
+      0.9998367879875959,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "confusion_matrix": [
+      [
+        5351,
+        0
+      ],
+      [
+        1,
+        2307
+      ]
+    ]
+  },
+  "meets_requirement": true,
+  "requirement": "82% accuracy minimum for CI/CD",
+  "hyperparameters": {
+    "n_estimators": 300,
+    "max_depth": 8,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 3,
+    "gamma": 0.1,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0
+  },
+  "note": "XGBoost model trained on preprocessed features. High accuracy suitable for educational CI/CD demonstration.",
+  "production_note": "In real production, 82-92% is more realistic. This model demonstrates the CI/CD pipeline functionality."
+}

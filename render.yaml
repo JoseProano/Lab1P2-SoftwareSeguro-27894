@@ -1,0 +1,21 @@
+services:
+  # Vulnerability Detection API
+  - type: web
+    name: vulnerability-detector-api
+    env: docker
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: PYTHONPATH
+        value: /app
+      - key: MODEL_PATH
+        value: /app/models/cicd_vulnerability_detector.joblib
+    healthCheckPath: /health
+    autoDeploy: true
+
+# Deploy via Docker
