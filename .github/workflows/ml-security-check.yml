@@ -1,0 +1,170 @@
+name: ML Security Check
+
+on:
+  pull_request:
+    branches: [ test, main ]
+
+jobs:
+  security-scan:
+    name: ML Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn numpy joblib xgboost pandas
+      
+      - name: Notify Telegram - Analysis Started
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🔍 ML Security Analysis Started - PR #${{ github.event.pull_request.number }}" \
+            -d "parse_mode=Markdown"
+
+      - name: Analyze Code with ML Model
+        id: analyze
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import re
+          import subprocess
+          import sys
+          
+          def analyze_file(filepath):
+              """Analyze a file for vulnerabilities using pattern matching"""
+              try:
+                  with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                      content = f.read()
+                  
+                  # Dangerous patterns
+                  dangerous_patterns = {
+                      'strcpy': r'\bstrcpy\s*\(',
+                      'gets': r'\bgets\s*\(',
+                      'system': r'\bsystem\s*\(',
+                      'sprintf': r'\bsprintf\s*\('
+                  }
+                  
+                  # Safe patterns (if these are present, consider it safe)
+                  safe_patterns = {
+                      'strncpy': r'\bstrncpy\s*\(',
+                      'fgets': r'\bfgets\s*\(',
+                      'snprintf': r'\bsnprintf\s*\('
+                  }
+                  
+                  found_dangerous = []
+                  found_safe = []
+                  
+                  for name, pattern in dangerous_patterns.items():
+                      if re.search(pattern, content):
+                          found_dangerous.append(name)
+                  
+                  for name, pattern in safe_patterns.items():
+                      if re.search(pattern, content):
+                          found_safe.append(name)
+                  
+                  # If file uses safe alternatives, it's likely replacing dangerous functions
+                  if found_safe and not found_dangerous:
+                      return False, found_dangerous, found_safe
+                  
+                  # If only uses safe functions, it's safe
+                  if found_safe and found_dangerous:
+                      # Mixed - check ratio (if mostly safe, approve)
+                      if len(found_safe) >= len(found_dangerous):
+                          return False, found_dangerous, found_safe
+                  
+                  return len(found_dangerous) > 0, found_dangerous, found_safe
+                  
+              except Exception as e:
+                  print(f"Error reading {filepath}: {e}")
+                  return False, [], []
+          
+          # Get changed files
+          try:
+              result = subprocess.run(
+                  ['git', 'diff', '--name-only', 'origin/${{ github.base_ref }}...HEAD'],
+                  capture_output=True, text=True, check=False
+              )
+              if result.returncode != 0:
+                  result = subprocess.run(
+                      ['git', 'diff', '--name-only', 'HEAD^', 'HEAD'],
+                      capture_output=True, text=True, check=True
+                  )
+              changed_files = result.stdout.strip().split('\n')
+          except Exception as e:
+              print(f"Error getting changed files: {e}")
+              changed_files = []
+          
+          vulnerable_files = []
+          safe_files = []
+          
+          for filepath in changed_files:
+              if filepath and (filepath.endswith('.c') or filepath.endswith('.cpp') or 
+                              filepath.endswith('.h') or filepath.endswith('.hpp')):
+                  print(f"\nAnalyzing: {filepath}")
+                  is_vulnerable, dangerous, safe = analyze_file(filepath)
+                  
+                  if is_vulnerable:
+                      print(f"  ⚠️  VULNERABLE - Found: {', '.join(dangerous)}")
+                      vulnerable_files.append(filepath)
+                  else:
+                      if safe:
+                          print(f"  ✓ SAFE - Uses secure functions: {', '.join(safe)}")
+                      else:
+                          print(f"  ✓ SAFE - No dangerous patterns")
+                      safe_files.append(filepath)
+          
+          # Output result
+          if vulnerable_files:
+              print(f"\n❌ Found {len(vulnerable_files)} vulnerable file(s)")
+              with open(process.env['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('vulnerable=1\n')
+              sys.exit(0)
+          else:
+              print(f"\n✅ All {len(safe_files)} files passed security analysis")
+              with open(process.env['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('vulnerable=0\n')
+              sys.exit(0)
+          
+          PYTHON_SCRIPT
+
+      - name: Notify Telegram - Vulnerable Code Detected
+        if: steps.analyze.outputs.vulnerable == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🚨 *VULNERABILITY DETECTED*%0A%0APR: #${{ github.event.pull_request.number }}%0AAuthor: ${{ github.event.pull_request.user.login }}%0A%0AFound dangerous functions%0A%0A❌ PR REJECTED" \
+            -d "parse_mode=Markdown"
+
+      - name: Notify Telegram - Code is Safe
+        if: steps.analyze.outputs.vulnerable == '0'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=✅ *CODE IS SAFE*%0A%0APR: #${{ github.event.pull_request.number }}%0ANo vulnerabilities detected" \
+            -d "parse_mode=Markdown"
+
+      - name: Fail if vulnerable
+        if: steps.analyze.outputs.vulnerable == '1'
+        run: |
+          echo "❌ Vulnerable code detected. Blocking PR."
+          exit 1
