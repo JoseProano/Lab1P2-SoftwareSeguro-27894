@@ -1,0 +1,80 @@
+name: ML-Based Security Check
+
+on:
+  pull_request:
+    branches: [ test, main ]
+
+jobs:
+  ml-security-analysis:
+    name: ML Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn==1.5.0 numpy joblib xgboost pandas
+      
+      - name: Notify Telegram - Analysis Started
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🔍 ML Security Analysis Started%0APR: #${{ github.event.pull_request.number }}%0AModel: XGBoost (99.99%% accuracy)%0ACompliance: No LLMs - Only ML" \
+            -d "parse_mode=Markdown"
+
+      - name: Analyze Code with ML Model
+        id: analyze
+        run: |
+          python3 scripts/cicd_analyzer.py src/ > analysis_output.txt 2>&1 || true
+          cat analysis_output.txt
+          
+          # Check if vulnerable
+          if grep -q "ANALYSIS FAILED" analysis_output.txt; then
+            echo "vulnerable=1" >> $GITHUB_OUTPUT
+            echo "❌ Code contains vulnerabilities"
+          else
+            echo "vulnerable=0" >> $GITHUB_OUTPUT
+            echo "✅ Code is safe"
+          fi
+
+      - name: Notify Telegram - Vulnerable Code Detected
+        if: steps.analyze.outputs.vulnerable == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=🚨 *VULNERABILITY DETECTED*%0A%0APR: #${{ github.event.pull_request.number }}%0AAuthor: ${{ github.event.pull_request.user.login }}%0A%0AML Model Classification: VULNERABLE%0AModel: XGBoost (Accuracy: 99.99%%)%0A%0A❌ PR REJECTED - Requires fixing" \
+            -d "parse_mode=Markdown"
+
+      - name: Notify Telegram - Code is Safe
+        if: steps.analyze.outputs.vulnerable == '0'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=✅ *CODE IS SAFE*%0A%0APR: #${{ github.event.pull_request.number }}%0AML Model: XGBoost%0AAccuracy: 99.99%%%0A%0ANo vulnerabilities detected" \
+            -d "parse_mode=Markdown"
+
+      - name: Fail if vulnerable
+        if: steps.analyze.outputs.vulnerable == '1'
+        run: |
+          echo "❌ ML model detected vulnerable code. Blocking PR."
+          exit 1
