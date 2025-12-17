@@ -17,8 +17,7 @@
 5. [Uso del Pipeline](#-uso-del-pipeline)
 6. [Notificaciones Telegram](#-notificaciones-telegram)
 7. [Resultados y Métricas](#-resultados-y-métricas)
-8. [Despliegue en Producción](#-despliegue-en-producción)
-9. [Demo en Video](#-demo-en-video)
+8. [Demo en Video](#-demo-en-video)
 
 ---
 
@@ -48,7 +47,7 @@ Sistema CI/CD completamente automatizado que integra **Machine Learning** para d
 │  - Extrae diff del PR                   │
 │  - Extrae 34 features del código        │
 │  - Clasifica: SEGURO vs VULNERABLE      │
-│  - Si VULNERABLE → ❌ RECHAZA PR         │
+│  - Si VULNERABLE → ❌ RECHAZA PR        │
 │  - Si SEGURO → ✅ Continúa              │
 └──────────────┬──────────────────────────┘
                │
@@ -57,20 +56,20 @@ Sistema CI/CD completamente automatizado que integra **Machine Learning** para d
 │  🧪 ETAPA 2: Tests Automatizados        │
 │  - Merge automático a TEST              │
 │  - pytest unitarios + integración       │
-│  - Si FALLA → ❌ BLOQUEA               │
+│  - Si FALLA → ❌ BLOQUEA                │
 │  - Si PASA → ✅ Continúa                │
 └──────────────┬──────────────────────────┘
                │
                ↓
 ┌─────────────────────────────────────────┐
-│  🚀 ETAPA 3: Deploy a Producción        │
+│  🚀 ETAPA 3: Merge a Producción         │
 │  - Merge automático a MAIN              │
-│  - Build Docker image                   │
-│  - Push a GHCR                          │
-│  - Deploy a Render/Railway              │
+│  - Código llega a rama main             │
 │  - Notificación Telegram ✅             │
 └─────────────────────────────────────────┘
 ```
+
+**Nota:** Este proyecto se enfoca en el pipeline CI/CD con detección ML. El despliegue a servicios externos no está implementado.
 
 ### Flujo de Ramas
 
@@ -244,14 +243,6 @@ python scripts/test_telegram_bot.py <BOT_TOKEN> <CHAT_ID>
 | `TELEGRAM_BOT_TOKEN` | Token de BotFather | `1234567890:ABCdef...` |
 | `TELEGRAM_CHAT_ID` | Tu chat ID | `123456789` |
 
-#### Secrets para Deploy (Opcional):
-
-| Secret Name | Para | Obtener en |
-|-------------|------|------------|
-| `RENDER_DEPLOY_HOOK` | Render | Dashboard → Settings |
-| `RAILWAY_TOKEN` | Railway | Settings → Tokens |
-| `FLY_API_TOKEN` | Fly.io | `fly tokens create deploy` |
-
 ### 5. Activar Branch Protection Rules
 
 #### Para rama `test`:
@@ -276,7 +267,6 @@ Branch name pattern: main
 ✅ Require status checks to pass:
    - 🔒 ML Security Analysis
    - 🧪 Unit Tests
-   - 🚀 Build & Deploy
 ✅ Require conversation resolution
 ✅ Do not allow bypassing
 ```
@@ -375,14 +365,12 @@ git push origin dev
 → Listo para producción
 ```
 
-##### Etapa 3: Deploy a Producción 🚀 (Solo si PR: `test` → `main`)
+##### Etapa 3: Merge a Producción 🚀 (Solo si PR: `test` → `main`)
 
 ```
-✅ Build Docker image
-✅ Push a GitHub Container Registry
-✅ Deploy a Render/Railway/Fly.io
 ✅ Auto-merge a main
-📱 Telegram: "🎉 Deployed to production!"
+✅ Código llega a rama main
+📱 Telegram: "✅ Merge a main completado"
 ```
 
 ---
@@ -464,24 +452,13 @@ Code is safe and tests passed.
 Merged to `test` branch.
 ```
 
-#### 8. **Deploy Iniciado**
+#### 8. **Merge a Main Completado**
 ```
-🚀 Deployment Started
-
-PR: #42
-Building Docker image and deploying to production...
-```
-
-#### 9. **Deploy Exitoso**
-```
-🎉 Deployment Successful!
+✅ Merge to Main Completed
 
 PR: #42
 ✅ Merged to `main`
-🚀 Deployed to production
-
-URL: https://vulnerability-detector.onrender.com
-Docker: ghcr.io/joseproano/lab1p2:latest
+Code successfully integrated to production branch.
 ```
 
 ---
@@ -504,9 +481,8 @@ Docker: ghcr.io/joseproano/lab1p2:latest
 |-------|-----------------|
 | Análisis ML | ~45 segundos |
 | Tests | ~2 minutos |
-| Build Docker | ~3 minutos |
-| Deploy | ~2 minutos |
-| **Total** | **~8 minutos** |
+| Merge a Main | ~30 segundos |
+| **Total** | **~3 minutos** |
 
 ### Tests de Validación
 
@@ -548,73 +524,11 @@ void safe_function(const char* input, size_t len) {
 - ✅ PR aprobado
 - Auto-merge a test
 - Tests ejecutados
-- Deploy a producción
+- Merge a main completado
 
 ---
 
-## 🌐 Despliegue en Producción
-
-### Opción 1: Render (Recomendada)
-
-1. **Crear Web Service en Render**
-   - Conectar repo GitHub
-   - Environment: Docker
-   - Branch: main
-   - Plan: Free
-
-2. **Deploy Hook**
-   ```bash
-   # En GitHub Secrets
-   RENDER_DEPLOY_HOOK=https://api.render.com/deploy/srv-xxxxx
-   ```
-
-3. **URL de Producción**
-   ```
-   https://vulnerability-detector-api.onrender.com
-   ```
-
-### Opción 2: Railway
-
-1. **Deploy con Railway**
-   ```bash
-   railway login
-   railway init
-   railway up
-   ```
-
-2. **Token en GitHub Secrets**
-   ```bash
-   RAILWAY_TOKEN=tu-token
-   RAILWAY_SERVICE_ID=srv-xxxxx
-   ```
-
-### Opción 3: Fly.io
-
-1. **Deploy con Fly**
-   ```bash
-   fly auth login
-   fly launch
-   fly deploy
-   ```
-
-2. **Token**
-   ```bash
-   fly tokens create deploy
-   # Agregar a GitHub Secrets como FLY_API_TOKEN
-   ```
-
-### Health Check
-
-Todos los deployments deben responder en:
-
-```bash
-curl https://tu-app.onrender.com/health
-# Response: {"status": "ok", "model_loaded": true}
-```
-
----
-
-## 🎬 Demo en Video
+##  Demo en Video
 
 ### Escenarios a Demostrar (8-12 minutos)
 
@@ -633,10 +547,8 @@ curl https://tu-app.onrender.com/health
 - Mostrar auto-merge a test
 - Mostrar tests ejecutándose
 - Crear PR test → main
-- Mostrar build Docker
-- Mostrar deploy a producción
+- Mostrar merge a main
 - Mostrar notificación Telegram de éxito
-- Abrir URL de producción
 
 #### 3. **Branch Protection** (2 min)
 - Intentar push directo a main
@@ -644,9 +556,9 @@ curl https://tu-app.onrender.com/health
 - Mostrar configuración de protección
 
 #### 4. **Monitoreo en Tiempo Real** (2 min)
-- Mostrar logs en Render/Railway
 - Mostrar chat de Telegram con historial
 - Mostrar issues creadas automáticamente
+- Mostrar GitHub Actions logs
 
 ---
 
@@ -684,12 +596,10 @@ Lab1P2-SoftwareSeguro-27894/
 │
 ├── docs/
 │   ├── TELEGRAM_SETUP.md               ← Configurar bot Telegram
-│   ├── BRANCH_PROTECTION.md            ← Configurar protección de ramas
-│   └── DEPLOYMENT_GUIDE.md             ← Guía de despliegue
+│   └── BRANCH_PROTECTION.md            ← Configurar protección de ramas
 │
 ├── Dockerfile                          ← Build imagen Docker
 ├── docker-compose.yml                  ← Entorno desarrollo
-├── render.yaml                         ← Config deploy Render
 ├── requirements.txt                    ← Dependencias Python
 └── README_CICD.md                      ← Este archivo
 ```
@@ -789,16 +699,15 @@ python src/cicd/vulnerability_analyzer.py test.c
 - [x] Notificaciones en todas las fases
 - [x] Branch protection rules activadas
 - [x] Tests unitarios implementados
-- [x] Deploy automático a producción
 - [x] README completo con instrucciones
 - [x] Notebook de entrenamiento incluido
 - [x] Demo funcional grabada
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
-**José Proaño**  
+**José Proaño, Josué Guallichico, Cristian Robalino**  
 Universidad de las Fuerzas Armadas ESPE  
 Desarrollo de Software Seguro  
 Diciembre 2025
@@ -816,8 +725,8 @@ MIT License - Ver [LICENSE](LICENSE)
 Para preguntas o problemas:
 
 1. **Issues:** https://github.com/JoseProano/Lab1P2-SoftwareSeguro-27894/issues
-2. **Telegram:** @lab1p2_security_bot
-3. **Email:** jose.proano@espe.edu.ec
+2. **Telegram:** @Lab1P2Bot
+3. **Email:** jiproano1@espe.edu.ec
 
 ---
 

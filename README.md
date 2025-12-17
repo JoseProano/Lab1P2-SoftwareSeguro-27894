@@ -8,7 +8,7 @@
 **Materia:** Desarrollo de Software Seguro  
 **Proyecto:** Proyecto Integrador Parcial II  
 **Profesor:** Ing. Geovanny Cudco  
-**Estudiante:** José Proaño, Josué Guallichico, Cristian Robalino  
+**Estudiantes:** José Proaño, Josué Guallichico, Cristian Robalino  
 **Fecha de Entrega:** 18 de diciembre de 2025
 
 ---
@@ -71,11 +71,11 @@ El sistema analiza automáticamente cada Pull Request utilizando un modelo de Ma
        │                                      ┌──────────▼──────────┐  │
        │                                      │  ETAPA 3:           │  │
        │                                      │  Merge a main       │  │
-       │                                      │  + Deploy           │  │
+       │                                      │  (Producción)       │  │
        │                                      └──────────┬──────────┘  │
        │                                                 │             │
        │  ◄────────────────────────────────────────────┘               │
-       │  📱 Notificación Telegram: DESPLEGADO EN PRODUCCIÓN          │
+       │  📱 Notificación Telegram: MERGE A MAIN COMPLETADO           │
        │                                                               │
 ```
 
@@ -99,7 +99,7 @@ El sistema analiza automáticamente cada Pull Request utilizando un modelo de Ma
 4. **Bot de Telegram**
    - Notificaciones en tiempo real
    - Reportes detallados de vulnerabilidades
-   - Confirmación de despliegues exitosos
+   - Confirmación de merges exitosos
 
 ---
 
@@ -167,22 +167,16 @@ El pipeline se activa automáticamente al crear un **Pull Request de dev → tes
 
 ---
 
-#### **ETAPA 3: Merge a main y Despliegue en Producción** ✅
+#### **ETAPA 3: Merge a main (Producción)** ✅
 
 **Proceso:**
 1. Solo si todo lo anterior pasó → **merge automático a main**
-2. Build de imagen Docker (opcional)
-3. Despliegue automático en proveedor gratuito:
-   - ✅ **Railway** (recomendado)
-   - ✅ **Render**
-   - ✅ **Fly.io**
-   - ✅ **Vercel** (para frontend)
-   - ✅ **Northflank**
-
-4. **Notificación final vía Telegram:**
-   - "✅ Despliegue exitoso en producción"
-   - URL del despliegue
+2. El código llega a la rama de producción
+3. 📱 **Notificación final vía Telegram:**
+   - "✅ Merge a main completado - Código en producción"
    - Commit SHA desplegado
+
+**Nota:** Este proyecto se enfoca en la **detección de vulnerabilidades** y **pipeline CI/CD automatizado**. El despliegue a servicios externos (Railway, Render, etc.) no es parte del alcance actual.
 
 ---
 
@@ -197,8 +191,7 @@ El bot de Telegram **@Lab1P2Bot** envía mensajes en los siguientes eventos:
 | Código seguro | "✅ Código seguro - continuando pipeline" | ✅ |
 | Merge a test | "✔️ Merge automático a test realizado" | ✅ |
 | Tests ejecutados | "✅ Tests passed" o "❌ Tests failed" | ✅ |
-| Despliegue exitoso | "🚀 Despliegue en producción exitoso: [URL]" | ✅ |
-| Despliegue fallido | "⚠️ Despliegue fallido - revisar logs" | ✅ |
+| Merge a main | "✅ Merge a main completado - Código en producción" | ✅ |
 
 **Configuración del Bot:**
 - Bot: `@Lab1P2Bot`
@@ -537,8 +530,8 @@ git push origin feature/new-functionality
 # 8. Crear PR: test → main
 
 # 9. Aprobar y hacer merge a main
-#    - Despliegue automático en producción
-#    - Telegram: "🚀 Desplegado en: https://..."
+#    - Código llega a producción (rama main)
+#    - Telegram: "✅ Merge a main completado"
 ```
 
 ### Flujo Completo: Código Vulnerable ❌
@@ -890,68 +883,6 @@ git push origin dev:main
 
 ---
 
-## � Despliegue en Producción
-
-### Opciones de Despliegue Implementadas
-
-El proyecto está configurado para desplegar automáticamente en uno de los siguientes proveedores gratuitos:
-
-#### Opción 1: Railway (Recomendado) ✅
-```yaml
-# railway.json
-{
-  "build": {
-    "builder": "DOCKERFILE"
-  },
-  "deploy": {
-    "startCommand": "python src/app.py",
-    "healthcheckPath": "/health"
-  }
-}
-```
-
-**Configuración:**
-1. Crear cuenta en https://railway.app
-2. Conectar repositorio GitHub
-3. Configurar variables de entorno (Telegram tokens)
-4. Deploy automático en cada merge a `main`
-
-#### Opción 2: Render ✅
-```yaml
-# render.yaml
-services:
-  - type: web
-    name: lab1p2-vulnerability-detector
-    env: docker
-    healthCheckPath: /health
-    envVars:
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: TELEGRAM_CHAT_ID
-        sync: false
-```
-
-#### Opción 3: Fly.io ✅
-```toml
-# fly.toml
-app = "lab1p2-vulnerability-detector"
-
-[build]
-  dockerfile = "Dockerfile"
-
-[[services]]
-  internal_port = 8080
-  protocol = "tcp"
-```
-
-### URL de Despliegue
-
-**Producción:** https://lab1p2-vulnerability-detector.railway.app (ejemplo)
-
-**Health Check:** https://lab1p2-vulnerability-detector.railway.app/health
-
----
-
 ## 📞 Contacto y Entrega
 
 ### Información del Estudiante
@@ -982,7 +913,6 @@ app = "lab1p2-vulnerability-detector"
   - [x] Instrucciones de setup del pipeline
   - [x] Cómo se entrenó el modelo (notebook incluido)
   - [x] Capturas y enlace al bot de Telegram
-  - [x] Enlace al despliegue en producción
 - [x] **Informe técnico en LaTeX** (carpeta `docs/informe_latex/`)
 - [x] **Notebook de entrenamiento** (carpeta `notebooks/`)
 - [x] **Modelos entrenados** (.joblib en carpeta `models/`)
@@ -991,16 +921,15 @@ app = "lab1p2-vulnerability-detector"
 
 **Demostración en vivo:**
 1. **Código vulnerable** → Rechazo automático del PR
-   - Mostrar PR #9 con "All checks have failed"
+   - Mostrar PR con "All checks have failed"
    - Ver comentario automático con vulnerabilidades detectadas
    - Ver notificación Telegram en tiempo real
    
-2. **Código seguro** → Flujo completo hasta producción
+2. **Código seguro** → Flujo completo hasta main
    - Crear PR con código seguro
    - Ver análisis ML en GitHub Actions
    - Ver aprobación automática
    - Ver merge a test → main
-   - Ver despliegue en Railway/Render
    - Ver notificación final en Telegram
 
 ---
@@ -1044,13 +973,7 @@ app = "lab1p2-vulnerability-detector"
 - [x] Chat ID configurado
 - [x] Notificaciones funcionando en todas las fases
 
-#### f) Despliegue Real y Funcional ✅
-- [x] Railway/Render configurado
-- [x] URL pública accesible
-- [x] Health check endpoint funcional
-- [x] Deploy automático desde `main`
-
-#### g) Branch Protection Rules ✅
+#### f) Branch Protection Rules ✅
 - [x] Rama `test` protegida
 - [x] Rama `main` protegida
 - [x] Requieren PR antes de merge
@@ -1066,7 +989,7 @@ app = "lab1p2-vulnerability-detector"
 - [x] Bloquea merge si vulnerable
 - [x] Permite merge si seguro
 - [x] Ejecuta tests en rama `test`
-- [x] Despliega automáticamente a producción
+- [x] Merge automático a main tras aprobación
 
 ### Modelo de Minería de Datos (6 puntos) ✅
 
@@ -1084,17 +1007,13 @@ app = "lab1p2-vulnerability-detector"
 - [x] Notificación: Resultado clasificación (con probabilidad)
 - [x] Notificación: Merge a test
 - [x] Notificación: Resultado de tests
-- [x] Notificación: Despliegue exitoso/fallido
+- [x] Notificación: Merge a main completado
 - [x] Notificación: Rechazo por vulnerabilidad (con detalle)
 - [x] Issue automática creada en rechazo
 
-### Despliegue Automático (3 puntos) ✅
+### Despliegue Automático
 
-- [x] Despliegue en Railway/Render
-- [x] URL pública funcional
-- [x] Health check endpoint
-- [x] Deploy automático desde `main`
-- [x] Notificación Telegram de despliegue
+**Nota:** El despliegue a servicios externos (Railway, Render, etc.) no está implementado en este proyecto. El alcance se limita al pipeline CI/CD con detección ML de vulnerabilidades.
 
 ### Documentación (2 puntos) ✅
 
@@ -1108,11 +1027,9 @@ app = "lab1p2-vulnerability-detector"
 
 ---
 
-## 🎬 Capturas de Pantalla
-
 ### 1. Pull Request Bloqueado (Código Vulnerable) ❌
 
-![PR Bloqueado](docs/images/pr_blocked.png)
+PR Bloqueado
 
 **PR #9:** dev → test
 - Status: ❌ All checks have failed
@@ -1121,7 +1038,7 @@ app = "lab1p2-vulnerability-detector"
 
 ### 2. Análisis ML en GitHub Actions ✅
 
-![GitHub Actions](docs/images/github_actions.png)
+GitHub Actions
 
 **Workflow:** ML Security Analysis
 - Carga modelo XGBoost
@@ -1131,7 +1048,7 @@ app = "lab1p2-vulnerability-detector"
 
 ### 3. Notificación Telegram (Vulnerable) ❌
 
-![Telegram Vulnerable](docs/images/telegram_vulnerable.png)
+Telegram Vulnerable
 
 ```
 @Lab1P2Bot:
@@ -1153,7 +1070,7 @@ Estado: MERGE BLOQUEADO ❌
 
 ### 4. Notificación Telegram (Seguro) ✅
 
-![Telegram Seguro](docs/images/telegram_safe.png)
+Telegram Seguro
 
 ```
 @Lab1P2Bot:
@@ -1215,7 +1132,6 @@ Este proyecto fue desarrollado con fines académicos como parte del **Proyecto I
 - ✅ **Accuracy superior al 82% requerido:** 99.99%
 - ✅ **Pipeline completamente automatizado**
 - ✅ **Notificaciones en todas las fases**
-- ✅ **Despliegue real y funcional**
 - ✅ **Branch protection rules activadas**
 - ✅ **Documentación completa**
 
