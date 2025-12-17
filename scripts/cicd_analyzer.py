@@ -103,7 +103,7 @@ class CICDCodeAnalyzer:
     
     def analyze_code(self, code: str) -> Dict:
         """
-        Analyze code and return classification result
+        Analyze code using hybrid approach: ML model + heuristics
         Returns: dict with 'label', 'probability', 'is_vulnerable'
         """
         try:
@@ -121,25 +121,54 @@ class CICDCodeAnalyzer:
             label = self.label_encoder.inverse_transform([prediction])[0]
             confidence = np.max(probabilities)
             
-            # Detect probable vulnerabilities
+            # Detect vulnerabilities
             vulnerabilities = self.detect_vulnerabilities(code)
+            has_dangerous = any('CWE' in v for v in vulnerabilities if v != "No specific vulnerabilities detected")
+            
+            # Detect safe practices
+            has_safe_functions = bool(re.search(r'\b(strncpy|fgets|snprintf|strncat)\s*\(', code))
+            has_validation = bool(re.search(r'\b(strlen|sizeof|validate|sanitize|bounds|check)\b', code, re.I))
+            
+            # Hybrid decision logic
+            if label == 'VULNERABLE':
+                # If model says vulnerable BUT code uses safe functions, override if confidence is low
+                if has_safe_functions and not has_dangerous and confidence < 0.75:
+                    final_label = 'SAFE'
+                    is_vulnerable = False
+                    confidence_note = f"ML: {label} ({confidence*100:.2f}%), but uses safe practices → SAFE"
+                else:
+                    final_label = label
+                    is_vulnerable = True
+                    confidence_note = f"ML: {label} ({confidence*100:.2f}%)"
+            else:
+                final_label = label
+                is_vulnerable = False
+                confidence_note = f"ML: {label} ({confidence*100:.2f}%)"
             
             return {
-                'label': label,
+                'label': final_label,
+                'ml_label': label,
                 'probability': float(confidence),
-                'is_vulnerable': label == 'VULNERABLE',
+                'is_vulnerable': is_vulnerable,
                 'vulnerabilities': vulnerabilities,
-                'confidence_percent': confidence * 100
+                'confidence_percent': confidence * 100,
+                'confidence_note': confidence_note,
+                'has_safe_practices': has_safe_functions,
+                'has_validation': has_validation
             }
             
         except Exception as e:
             print(f"Error analyzing code: {e}", file=sys.stderr)
             return {
                 'label': 'ERROR',
+                'ml_label': 'ERROR',
                 'probability': 0.0,
                 'is_vulnerable': True,  # Fail-safe: block on error
                 'vulnerabilities': [f"Analysis error: {str(e)}"],
-                'confidence_percent': 0.0
+                'confidence_percent': 0.0,
+                'confidence_note': 'Analysis failed',
+                'has_safe_practices': False,
+                'has_validation': False
             }
     
     def detect_vulnerabilities(self, code: str) -> List[str]:
