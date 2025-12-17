@@ -1,8 +1,8 @@
 # ✅ Checklist Final de Entrega - Proyecto Integrador Parcial II
 
 ## Universidad de las Fuerzas Armadas ESPE
-**Fecha Límite:** 17 de diciembre de 2025, 23:59 horas  
-**Estudiante:** José Proaño  
+**Fecha Límite:** 18 de diciembre de 2025
+**Estudiantes:** José Proaño, Josué Guallichico, Cristian Robalino 
 **Proyecto:** Pipeline CI/CD Seguro con IA para Detección de Vulnerabilidades  
 
 ---
@@ -391,30 +391,6 @@ curl https://lab1p2-vulnerability-detector.railway.app/health
 - Demo en vivo del bot de Telegram
 - Explicación de accuracy 99.99%
 
-### 4. Enviar Enlace al Profesor
-```
-Asunto: Entrega Proyecto Integrador Parcial II - José Proaño
-
-Profesor Geovanny Cudco,
-
-Adjunto la entrega del Proyecto Integrador Parcial II:
-
-Repositorio: https://github.com/JoseProano/Lab1P2-SoftwareSeguro-27894
-Bot Telegram: @Lab1P2Bot
-Despliegue: https://lab1p2-vulnerability-detector.railway.app
-
-Documentación principal: README.md
-Resumen ejecutivo: RESUMEN_EJECUTIVO.md
-Notebook: notebooks/model_training.ipynb
-Informe LaTeX: docs/informe_latex/
-
-Modelo: XGBoost (99.99% accuracy - supera 82% requerido)
-NO se utilizaron LLMs (restricción cumplida)
-
-Saludos,
-José Proaño
-```
-
 ---
 
 ## ✅ ESTADO FINAL
@@ -444,6 +420,5 @@ READY FOR SUBMISSION ✅
 ```
 
 **Fecha de Verificación:** 16 de diciembre de 2025  
-**Fecha de Entrega:** 17 de diciembre de 2025, 23:59 horas  
-**Tiempo restante:** ~30 horas  
+**Fecha de Entrega:** 18 de diciembre de 2025
 **Estado:** ✅ LISTO PARA ENTREGAR
