@@ -133,21 +133,20 @@ git branch -a
   - [x] Bloqueo del pipeline
   - [x] Notificación Telegram + etiqueta "tests-failed"
 
-### ETAPA 3: Merge a main y Despliegue ✅
+### ETAPA 3: Merge a main (Producción) ✅
 
 - [x] **Solo si todo anterior pasó → merge a main**
   - Branch protection rules activadas
 
-- [x] **Build de imagen Docker** (opcional)
-  - Dockerfile incluido
+- [x] **Código seguro llega a producción (rama main)**
+  - Merge automático completado
 
-- [x] **Despliegue automático en proveedor gratuito**
-  - [x] Railway configurado
-  - [x] Render como alternativa
-  - [x] URL pública: `https://lab1p2-vulnerability-detector.railway.app`
+- [ ] **Despliegue automático a servicios externos** 
+  - Railway/Render: NO implementado
+  - Alcance del proyecto: Pipeline CI/CD + ML
 
 - [x] **Notificación final de éxito vía Telegram**
-  - Incluye URL de despliegue
+  - "Merge a main completado"
 
 ---
 
@@ -170,8 +169,7 @@ git branch -a
 | Resultado clasificación (vulnerable) | ✅ | "❌ Vulnerabilidad detectada + CWEs" |
 | Merge a test realizado | ✅ | "✔️ Merge a test completado" |
 | Resultado de pruebas | ✅ | "✅ Tests passed" / "❌ Tests failed" |
-| Despliegue exitoso | ✅ | "🚀 Desplegado en: [URL]" |
-| Despliegue fallido | ✅ | "⚠️ Despliegue fallido" |
+| Merge a main | ✅ | "✅ Merge a main completado" |
 | Rechazo por vulnerabilidad (detalle) | ✅ | Con lista de CWEs y confianza |
 
 ---
