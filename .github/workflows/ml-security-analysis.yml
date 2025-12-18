@@ -125,9 +125,8 @@ jobs:
       - name: Get Render Service URL
         id: get_url
         run: |
-          # Try to extract URL from render.yaml or use default pattern
-          SERVICE_NAME=$(grep "name:" render.yaml | head -1 | awk '{print $3}')
-          RENDER_URL="https://${SERVICE_NAME}.onrender.com"
+          # Hardcoded URL since render.yaml is not available in workflow context
+          RENDER_URL="https://lab1p2-vulnerability-detector.onrender.com"
           echo "url=${RENDER_URL}" >> $GITHUB_OUTPUT
           echo "Service URL: ${RENDER_URL}"
       
