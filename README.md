@@ -167,16 +167,28 @@ El pipeline se activa automáticamente al crear un **Pull Request de dev → tes
 
 ---
 
-#### **ETAPA 3: Merge a main (Producción)** ✅
+#### **ETAPA 3: Merge a main (Producción) + Despliegue Automático** ✅
 
 **Proceso:**
 1. Solo si todo lo anterior pasó → **merge automático a main**
 2. El código llega a la rama de producción
-3. 📱 **Notificación final vía Telegram:**
+3. 🚀 **Auto-deploy en Render.com:**
+   - Render detecta nuevo commit en `main`
+   - Rebuild automático del contenedor Docker
+   - Deploy del servicio REST API
+   - Health checks hasta confirmación
+4. 📱 **Notificación final vía Telegram:**
    - "✅ Merge a main completado - Código en producción"
+   - "🎉 Deployment successful"
+   - URL del servicio desplegado
    - Commit SHA desplegado
 
-**Nota:** Este proyecto se enfoca en la **detección de vulnerabilidades** y **pipeline CI/CD automatizado**. El despliegue a servicios externos (Railway, Render, etc.) no es parte del alcance actual.
+**Servicio en Producción:**
+- **URL:** https://lab1p2-vulnerability-detector.onrender.com
+- **Health Check:** https://lab1p2-vulnerability-detector.onrender.com/health
+- **Estado:** ✅ LIVE
+- **Plataforma:** Render.com (Docker)
+- **Auto-deploy:** Activado desde rama `main`
 
 ---
 
@@ -572,6 +584,162 @@ git push origin feature/unsafe-code
 #    - Clasifica como SAFE ✅
 #    - PR desbloqueado
 ```
+
+---
+
+## 🌐 API REST en Producción
+
+### URL del Servicio
+
+**Base URL:** https://lab1p2-vulnerability-detector.onrender.com
+
+### Endpoints Disponibles
+
+#### 1. GET `/` - Información del Servicio
+
+**Request:**
+```bash
+curl https://lab1p2-vulnerability-detector.onrender.com/
+```
+
+**Response (200 OK):**
+```json
+{
+  "service": "Vulnerability Detection API",
+  "project": "CI/CD Security Pipeline",
+  "university": "ESPE",
+  "model": "XGBoost",
+  "accuracy": "99.99%",
+  "version": "1.0.0",
+  "status": "online",
+  "endpoints": {
+    "health": "/health",
+    "info": "/info",
+    "analyze": "/analyze (POST)"
+  }
+}
+```
+
+#### 2. GET `/health` - Health Check
+
+**Request:**
+```bash
+curl https://lab1p2-vulnerability-detector.onrender.com/health
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "ok",
+  "model_loaded": true,
+  "timestamp": "2025-12-18T04:17:11.123456"
+}
+```
+
+#### 3. GET `/info` - Información del Modelo
+
+**Request:**
+```bash
+curl https://lab1p2-vulnerability-detector.onrender.com/info
+```
+
+**Response (200 OK):**
+```json
+{
+  "model_type": "XGBoost Classifier",
+  "accuracy": "99.99%",
+  "features": 34,
+  "classes": ["SAFE", "VULNERABLE"],
+  "training_date": "2025-12-17",
+  "dataset_size": 38294,
+  "version": "1.0.0"
+}
+```
+
+#### 4. POST `/analyze` - Análisis de Código
+
+**Request:**
+```bash
+curl -X POST https://lab1p2-vulnerability-detector.onrender.com/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "int safe_function(const char* user_input, size_t input_len) { char buffer[256]; strncpy(buffer, user_input, input_len); return 0; }"
+  }'
+```
+
+**Response - Código Seguro (200 OK):**
+```json
+{
+  "status": "success",
+  "classification": "SAFE",
+  "confidence": 55.0,
+  "is_vulnerable": false,
+  "vulnerabilities": [],
+  "model": "XGBoost (99.99% accuracy)",
+  "timestamp": "2025-12-18T04:31:31.530748"
+}
+```
+
+**Response - Código Vulnerable (200 OK):**
+```json
+{
+  "status": "success",
+  "classification": "VULNERABLE",
+  "confidence": 67.37,
+  "is_vulnerable": true,
+  "vulnerabilities": [
+    {
+      "cwe": "CWE-787",
+      "description": "Buffer Overflow (strcpy)",
+      "severity": "HIGH"
+    },
+    {
+      "cwe": "CWE-676",
+      "description": "Dangerous Function (gets)",
+      "severity": "HIGH"
+    },
+    {
+      "cwe": "CWE-78",
+      "description": "Command Injection (system)",
+      "severity": "CRITICAL"
+    }
+  ],
+  "model": "XGBoost (99.99% accuracy)",
+  "timestamp": "2025-12-18T04:20:38.123456"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "error": "Missing 'code' field in request",
+  "status": "error"
+}
+```
+
+**Error Response (500 Internal Server Error):**
+```json
+{
+  "error": "Model prediction failed",
+  "status": "error"
+}
+```
+
+### Características del Servicio
+
+- **Alta Disponibilidad:** Desplegado en Render.com con auto-deploy
+- **Health Checks:** Monitoreo automático cada 5 segundos
+- **CORS Habilitado:** Accesible desde cualquier origen
+- **Modelo Pre-cargado:** Carga al iniciar (no en cada request)
+- **Respuesta Rápida:** ~200-500ms por análisis
+- **Free Tier:** Puede tener cold start de ~30-50 segundos
+
+### Limitaciones (Free Tier)
+
+- **Cold Start:** El servicio se detiene tras 15 min de inactividad
+- **Primera Request:** Puede tardar 30-50 segundos en responder
+- **Requests Subsiguientes:** Responden inmediatamente
+- **Solución:** Activar el servicio visitando el endpoint antes de la demo
 
 ---
 
@@ -1011,9 +1179,17 @@ git push origin dev:main
 - [x] Notificación: Rechazo por vulnerabilidad (con detalle)
 - [x] Issue automática creada en rechazo
 
-### Despliegue Automático
+### Despliegue Automático (3 puntos) ✅
 
-**Nota:** El despliegue a servicios externos (Railway, Render, etc.) no está implementado en este proyecto. El alcance se limita al pipeline CI/CD con detección ML de vulnerabilidades.
+- [x] Servicio REST API desplegado en Render.com
+- [x] Auto-deploy desde rama `main` configurado
+- [x] URL pública accesible: https://lab1p2-vulnerability-detector.onrender.com
+- [x] Health check endpoint funcional (/health)
+- [x] 4 endpoints implementados: /, /health, /info, /analyze
+- [x] Modelo XGBoost pre-cargado en memoria
+- [x] Docker containerizado
+- [x] Notificaciones Telegram en deploy exitoso/fallido
+- [x] Documentación completa de API en README
 
 ### Documentación (2 puntos) ✅
 
