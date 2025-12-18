@@ -107,9 +107,10 @@ jobs:
             echo "status=skipped" >> $GITHUB_OUTPUT
           else
             response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$RENDER_DEPLOY_HOOK")
-            if [ $response -eq 200 ] || [ $response -eq 201 ]; then
+            # Render returns 202 Accepted for deploy hooks
+            if [ $response -eq 200 ] || [ $response -eq 201 ] || [ $response -eq 202 ]; then
               echo "status=triggered" >> $GITHUB_OUTPUT
-              echo "✅ Deployment triggered successfully"
+              echo "✅ Deployment triggered successfully (HTTP $response)"
             else
               echo "status=failed" >> $GITHUB_OUTPUT
               echo "❌ Deployment trigger failed: HTTP $response"
