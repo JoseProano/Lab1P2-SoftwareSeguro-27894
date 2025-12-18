@@ -31,9 +31,10 @@ RUN mkdir -p /app/data /app/models /app/logs /app/reports
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV PORT=8080
 
-# Expose port for potential web interface
-EXPOSE 8000
+# Expose port for API
+EXPOSE 8080
 
-# Default command
-CMD ["python", "-u", "src/main.py"]
+# Default command - Run API for production
+CMD ["python", "-u", "src/app.py"]

@@ -45,6 +45,7 @@ pytest
 # Web Framework
 flask
 flask-cors
+gunicorn
 
 # Feature Engineering
 imbalanced-learn
